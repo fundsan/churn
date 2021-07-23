@@ -2,6 +2,7 @@
 
 
 # import libraries
+import pandas as pd
 
 
 
@@ -14,8 +15,8 @@ def import_data(pth):
             pth: a path to the csv
     output:
             df: pandas dataframe
-    '''	
-    pass
+    '''
+    return df
 
 
 def perform_eda(df):
@@ -27,7 +28,15 @@ def perform_eda(df):
     output:
             None
     '''
-	pass
+    print(df.isnull().sum())
+    print(df.describe())
+    
+    for column in df.describe().columns:
+        ax = df[column].hist()  
+        fig = ax.get_figure()
+        fig.savefig('images/{}_hist.pdf'.format(column))
+    
+    
 
 
 def encoder_helper(df, category_lst, response):
