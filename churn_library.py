@@ -50,10 +50,19 @@ def encoder_helper(df, category_lst, response):
             response: string of response name [optional argument that could be used for naming variables or index y column]
 
     output:
-            df: pandas dataframe with new columns for
+            df: pandas dataframe with new columns for proportion of churn
     '''
-    pass
+    df['Churn'] = df[response].apply(lambda val: 0 if val == "Existing Customer" else 1)
+    for category in category_lst:
+        
+        lst = []
+        groups = df.groupby(category).mean()['Churn']
 
+        
+            
+
+        df[category+'_churn'] = df[category].apply(lambda x:groups.loc[x] )
+    return df
 
 def perform_feature_engineering(df, response):
     '''
