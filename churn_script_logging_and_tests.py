@@ -1,6 +1,7 @@
 import os
 import logging
-import churn_library_solution as cls
+#import churn_library_solution as cls
+from churn_library import *
 
 logging.basicConfig(
     filename='./logs/churn_library.log',
@@ -8,7 +9,7 @@ logging.basicConfig(
     filemode='w',
     format='%(name)s - %(levelname)s - %(message)s')
 
-def test_import(import_data):
+def test_import():
     '''
     test data import - this example is completed for you to assist with the other test functions
     '''
@@ -27,32 +28,56 @@ def test_import(import_data):
         raise err
 
 
-def test_eda(perform_eda):
+def test_eda():
     '''
     test perform eda function
     '''
+    test_df=pd.read_csv("./data/bank_data.csv")
+    test_df=test_df[['Customer_Age','Dependent_count','Gender']]
+    try:
+        assert os.path.isdir("./images/eda")==True
+        
+    except AssertionError as err:
+        logging.error("Testing eda: The directory to save file wasn't found")
 
+    try:
+        perform_eda(test_df)
+        logging.info("Testing eda: directory to save analysis images  SUCCESSFULLY")
+    except FileNotFoundError as err:
+        logging.error("Testing eda: The directory to save file wasn't found")
+        raise err
+    try:
+        assert os.path.isfile("./images/eda/Customer_Age_hist.png")==True
+        assert os.path.isfile("./images/eda/Gender_dist.png")==True
+        assert os.path.isfile("./images/eda/corr.png")==True
+        logging.info("Testing eda: exploratory data analysis images saved SUCCESSFULLY")
+    except AssertionError:
+        logging.error("Testing eda: not all images are being saved")
+        raise err
+        
+    
 
+    
+"""
 def test_encoder_helper(encoder_helper):
     '''
     test encoder helper
     '''
-
+    pass
 
 def test_perform_feature_engineering(perform_feature_engineering):
     '''
     test perform_feature_engineering
     '''
-
+    pass
 
 def test_train_models(train_models):
     '''
     test train_models
     '''
-
-
-if __name__ == "__main__":
     pass
+
+"""
 
 
 

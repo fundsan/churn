@@ -2,9 +2,13 @@
 
 
 # import libraries
+import os
+os.environ['QT_QPA_PLATFORM']='offscreen'
 import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
 
-
+import seaborn as sns 
 
 
 def import_data(pth):
@@ -16,7 +20,7 @@ def import_data(pth):
     output:
             df: pandas dataframe
     '''
-    return df
+    return pd.read_csv(pth)
 
 
 def perform_eda(df):
@@ -31,11 +35,18 @@ def perform_eda(df):
     print(df.isnull().sum())
     print(df.describe())
     
-    for column in df.describe().columns:
-        ax = df[column].hist()  
+    for column in list(df.describe().columns):
+        ax = df[column].hist()
         fig = ax.get_figure()
-        fig.savefig('images/{}_hist.pdf'.format(column))
+        fig.savefig('images/eda/{}_hist.png'.format(column))
+    category_columns = set(df.columns) - set(list(df.describe().columns))
+    for column in list(category_columns):
+        ax = df[column].value_counts('normalize').plot(kind='bar') 
+        fig = ax.get_figure()
+        fig.savefig('images/eda/{}_dist.png'.format(column))
     
+    ax =sns.heatmap(df.corr(), annot=False, cmap='Dark2_r', linewidths = 2)
+    fig.savefig('images/eda/corr.png')
     
 
 
@@ -124,4 +135,6 @@ def train_models(X_train, X_test, y_train, y_test):
     output:
               None
     '''
+    pass
+if __name__ == "__main__": 
     pass
