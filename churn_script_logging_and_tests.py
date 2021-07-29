@@ -4,7 +4,7 @@ import logging
 from churn_library import *
 
 logging.basicConfig(
-    filename='./logs/churn_library.log',
+    filename='./logs/churn_script_logging_and_tests.log',
     level = logging.INFO,
     filemode='w',
     format='%(name)s - %(levelname)s - %(message)s')
@@ -78,8 +78,9 @@ def test_train_models(train_models):
     pass
 
 """
-
-
+if __name__ == "__main__":
+    test_import()
+    test_eda()
 
 
 
