@@ -48,9 +48,13 @@ def test_eda():
         raise err
     try:
         assert os.path.isfile("./images/eda/Customer_Age_hist.png")==True
+        os.remove("./images/eda/Customer_Age_hist.png") 
         assert os.path.isfile("./images/eda/Gender_dist.png")==True
+        os.remove("./images/eda/Gender_dist.png") 
         assert os.path.isfile("./images/eda/corr.png")==True
+        os.remove("./images/eda/corr.png") 
         logging.info("Testing eda: exploratory data analysis images saved SUCCESSFULLY")
+        
     except AssertionError:
         logging.error("Testing eda: not all images are being saved")
         raise err
