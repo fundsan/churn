@@ -62,13 +62,24 @@ def test_eda():
     
 
     
-"""
-def test_encoder_helper(encoder_helper):
+
+def test_encoder_helper():
     '''
     test encoder helper
     '''
-    pass
-
+    
+    test_df=pd.read_csv("./data/bank_data.csv")
+    test_df=test_df[['Attrition_Flag','Customer_Age','Dependent_count','Gender','Marital_Status']]
+    categorical_test = ['Gender','Marital_Status']
+    try :
+        assert set(encoder_helper(test_df,categorical_test).columns)==set(['Attrition_Flag','Customer_Age','Dependent_count','Gender','Marital_Status','Churn','Gender_churn','Marital_Status_churn'])
+        logging.info("Testing encoder_helper: SUCCESSFULLY Created new encoder columns")
+        
+    except AssertionError:
+        logging.error("Testing encoder_helper: expected "+str(['Attrition_Flag','Customer_Age','Dependent_count','Gender','Marital_Status','Gender_churn','Marital_Status_churn'])+ " for columns but got "+str(encoder_helper(test_df,categorical_test).columns))
+        raise err
+        
+"""
 def test_perform_feature_engineering(perform_feature_engineering):
     '''
     test perform_feature_engineering

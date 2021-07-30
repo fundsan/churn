@@ -50,7 +50,7 @@ def perform_eda(df):
     
 
 
-def encoder_helper(df, category_lst, response):
+def encoder_helper(df, category_lst, response='churn'):
     '''
     helper function to turn each categorical column into a new column with
     propotion of churn for each category - associated with cell 15 from the notebook
@@ -63,7 +63,7 @@ def encoder_helper(df, category_lst, response):
     output:
             df: pandas dataframe with new columns for proportion of churn
     '''
-    df['Churn'] = df[response].apply(lambda val: 0 if val == "Existing Customer" else 1)
+    df['Churn'] = df['Attrition_Flag'].apply(lambda val: 0 if val == "Existing Customer" else 1)
     for category in category_lst:
         
         lst = []
@@ -72,7 +72,7 @@ def encoder_helper(df, category_lst, response):
         
             
 
-        df[category+'_churn'] = df[category].apply(lambda x:groups.loc[x] )
+        df[category+'_'+response] = df[category].apply(lambda x:groups.loc[x] )
     return df
 
 def perform_feature_engineering(df, response):
