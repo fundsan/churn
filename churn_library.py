@@ -10,6 +10,7 @@ import numpy as np
 
 import seaborn as sns 
 
+from sklearn.metrics import plot_roc_curve, classification_report
 
 def import_data(pth):
     '''
@@ -108,7 +109,8 @@ def classification_report_image(y_train,
     output:
              None
     '''
-    pass
+    pd.DataFrame(classification_report(y_train, y_train_preds_lr,default=True)).plot()
+    
 
 
 def feature_importance_plot(model, X_data, output_pth):
@@ -122,7 +124,26 @@ def feature_importance_plot(model, X_data, output_pth):
     output:
              None
     '''
-    pass
+    # Calculate feature importances
+    importances = model.feature_importances_
+    # Sort feature importances in descending order
+    indices = np.argsort(importances)[::-1]
+
+    # Rearrange feature names so they match the sorted feature importances
+    names = [X.columns[i] for i in indices]
+
+    # Create plot
+    plt.figure(figsize=(20,5))
+
+    # Create plot title
+    plt.title("Feature Importance")
+    plt.ylabel('Importance')
+
+    # Add bars
+    plt.bar(range(X.shape[1]), importances[indices])
+
+    # Add feature names as x-axis labels
+    plt.xticks(range(X.shape[1]), names, rotation=90);
 
 def train_models(X_train, X_test, y_train, y_test):
     '''
@@ -135,6 +156,72 @@ def train_models(X_train, X_test, y_train, y_test):
     output:
               None
     '''
-    pass
+    rfc = RandomForestClassifier(random_state=42)
+    lrc = LogisticRegression()
+
+    param_grid = { 'n_estimators': [200, 500],
+        'max_features': ['auto', 'sqrt'],
+        'max_depth' : [4,5,100],
+        'criterion' :['gini', 'entropy']
+    }
+    cv_rfc = GridSearchCV(estimator=rfc, param_grid=param_grid, cv=5)
+    cv_rfc.fit(X_train, y_train)
+
+    lrc.fit(X_train, y_train)
+
+    y_train_preds_rf = cv_rfc.best_estimator_.predict(X_train)
+    y_test_preds_rf = cv_rfc.best_estimator_.predict(X_test)
+
+    y_train_preds_lr = lrc.predict(X_train)
+    y_test_preds_lr = lrc.predict(X_test)
+    classification_report_image(y_train,
+                                y_test,
+                                y_train_preds_lr,
+                                y_train_preds_rf,
+                                y_test_preds_lr,
+                                y_test_preds_rf)
+    
+
 if __name__ == "__main__": 
-    pass
+    df = import_data(r"./data/bank_data.csv")
+    cat_columns = [
+    'Gender',
+    'Education_Level',
+    'Marital_Status',
+    'Income_Category',
+    'Card_Category'                
+    ]
+
+    quant_columns = [
+    'Customer_Age',
+    'Dependent_count', 
+    'Months_on_book',
+    'Total_Relationship_Count', 
+    'Months_Inactive_12_mon',
+    'Contacts_Count_12_mon', 
+    'Credit_Limit', 
+    'Total_Revolving_Bal',
+    'Avg_Open_To_Buy', 
+    'Total_Amt_Chng_Q4_Q1', 
+    'Total_Trans_Amt',
+    'Total_Trans_Ct', 
+    'Total_Ct_Chng_Q4_Q1', 
+    'Avg_Utilization_Ratio'
+    ]
+    
+    df = encoder_helper(df, category_lst, response='churn')
+    
+    keep_cols = ['Customer_Age', 'Dependent_count', 'Months_on_book',
+             'Total_Relationship_Count', 'Months_Inactive_12_mon',
+             'Contacts_Count_12_mon', 'Credit_Limit', 'Total_Revolving_Bal',
+             'Avg_Open_To_Buy', 'Total_Amt_Chng_Q4_Q1', 'Total_Trans_Amt',
+             'Total_Trans_Ct', 'Total_Ct_Chng_Q4_Q1', 'Avg_Utilization_Ratio',
+             'Gender_Churn', 'Education_Level_Churn', 'Marital_Status_Churn', 
+             'Income_Category_Churn', 'Card_Category_Churn']
+
+    X[keep_cols] = df[keep_cols]
+    # train test split 
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size= 0.3, random_state=42)
+    
+    train_models(X_train, X_test, y_train, y_test)
+    
