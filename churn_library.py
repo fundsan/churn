@@ -10,7 +10,7 @@ import numpy as np
 
 import seaborn as sns 
 
-from sklearn.metrics import plot_roc_curve, classification_report
+from sklearn.metrics import  classification_report
 
 def import_data(pth):
     '''
@@ -51,7 +51,7 @@ def perform_eda(df):
     
 
 
-def encoder_helper(df, category_lst, response='churn'):
+def encoder_helper(df, category_lst, response='Churn'):
     '''
     helper function to turn each categorical column into a new column with
     propotion of churn for each category - associated with cell 15 from the notebook
@@ -64,7 +64,7 @@ def encoder_helper(df, category_lst, response='churn'):
     output:
             df: pandas dataframe with new columns for proportion of churn
     '''
-    df['Churn'] = df['Attrition_Flag'].apply(lambda val: 0 if val == "Existing Customer" else 1)
+    df[response] = df['Attrition_Flag'].apply(lambda val: 0 if val == "Existing Customer" else 1)
     for category in category_lst:
         
         lst = []
@@ -76,7 +76,7 @@ def encoder_helper(df, category_lst, response='churn'):
         df[category+'_'+response] = df[category].apply(lambda x:groups.loc[x] )
     return df
 
-def perform_feature_engineering(df, response):
+def perform_feature_engineering(df, response='Churn'):
     '''
     input:
               df: pandas dataframe
@@ -88,6 +88,25 @@ def perform_feature_engineering(df, response):
               y_train: y training data
               y_test: y testing data
     '''
+    cat_columns = ['Gender','Education_Level','Marital_Status','Income_Category','Card_Category'  ]
+
+    quant_columns = ['Customer_Age','Dependent_count', 'Months_on_book','Total_Relationship_Count', 'Months_Inactive_12_mon','Contacts_Count_12_mon', 'Credit_Limit', 'Total_Revolving_Bal','Avg_Open_To_Buy', 'Total_Amt_Chng_Q4_Q1', 'Total_Trans_Amt','Total_Trans_Ct', 'Total_Ct_Chng_Q4_Q1', 'Avg_Utilization_Ratio']
+    
+    df = encoder_helper(df, category_lst, response=response)
+    
+    keep_cols = ['Customer_Age', 'Dependent_count', 'Months_on_book',
+             'Total_Relationship_Count', 'Months_Inactive_12_mon',
+             'Contacts_Count_12_mon', 'Credit_Limit', 'Total_Revolving_Bal',
+             'Avg_Open_To_Buy', 'Total_Amt_Chng_Q4_Q1', 'Total_Trans_Amt',
+             'Total_Trans_Ct', 'Total_Ct_Chng_Q4_Q1', 'Avg_Utilization_Ratio',
+             'Gender_Churn', 'Education_Level_Churn', 'Marital_Status_Churn', 
+             'Income_Category_Churn', 'Card_Category_Churn']
+
+    X[keep_cols] = df[keep_cols]
+    y = df[response]
+    # train test split 
+    return train_test_split(X, y, test_size= 0.3, random_state=42)
+    
 
 def classification_report_image(y_train,
                                 y_test,
@@ -109,7 +128,23 @@ def classification_report_image(y_train,
     output:
              None
     '''
-    pd.DataFrame(classification_report(y_train, y_train_preds_lr,default=True)).plot()
+    ax=pd.DataFrame(classification_report(y_train, y_train_preds_rf,default=True)).plot()
+    fig = ax.get_figure()
+    fig.savefig('images/eda/classification_report_{}.png'.format('rf_train'))
+    
+    ax=pd.DataFrame(classification_report(y_train, y_train_preds_lr,default=True)).plot()
+    fig = ax.get_figure()
+    fig.savefig('images/eda/classification_report_{}.png'.format('lr_train'))
+    
+    ax=pd.DataFrame(classification_report(y_test, y_test_preds_lr,default=True)).plot()
+    fig = ax.get_figure()
+    fig.savefig('images/eda/classification_report_{}.png'.format('lr_test'))
+    
+    ax=pd.DataFrame(classification_report(y_test, y_train_preds_rf,default=True)).plot()
+    fig = ax.get_figure()
+    fig.savefig('images/eda/classification_report_{}.png'.format('rf_test'))
+    
+    
     
 
 
@@ -184,44 +219,6 @@ def train_models(X_train, X_test, y_train, y_test):
 
 if __name__ == "__main__": 
     df = import_data(r"./data/bank_data.csv")
-    cat_columns = [
-    'Gender',
-    'Education_Level',
-    'Marital_Status',
-    'Income_Category',
-    'Card_Category'                
-    ]
-
-    quant_columns = [
-    'Customer_Age',
-    'Dependent_count', 
-    'Months_on_book',
-    'Total_Relationship_Count', 
-    'Months_Inactive_12_mon',
-    'Contacts_Count_12_mon', 
-    'Credit_Limit', 
-    'Total_Revolving_Bal',
-    'Avg_Open_To_Buy', 
-    'Total_Amt_Chng_Q4_Q1', 
-    'Total_Trans_Amt',
-    'Total_Trans_Ct', 
-    'Total_Ct_Chng_Q4_Q1', 
-    'Avg_Utilization_Ratio'
-    ]
-    
-    df = encoder_helper(df, category_lst, response='churn')
-    
-    keep_cols = ['Customer_Age', 'Dependent_count', 'Months_on_book',
-             'Total_Relationship_Count', 'Months_Inactive_12_mon',
-             'Contacts_Count_12_mon', 'Credit_Limit', 'Total_Revolving_Bal',
-             'Avg_Open_To_Buy', 'Total_Amt_Chng_Q4_Q1', 'Total_Trans_Amt',
-             'Total_Trans_Ct', 'Total_Ct_Chng_Q4_Q1', 'Avg_Utilization_Ratio',
-             'Gender_Churn', 'Education_Level_Churn', 'Marital_Status_Churn', 
-             'Income_Category_Churn', 'Card_Category_Churn']
-
-    X[keep_cols] = df[keep_cols]
-    # train test split 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size= 0.3, random_state=42)
-    
-    train_models(X_train, X_test, y_train, y_test)
+    perform_feature_engineering(df, "Churn")
+    X_train, X_test, y_train, y_test = train_models(X_train, X_test, y_train, y_test)
     
