@@ -4,6 +4,8 @@
 # import libraries
 import os
 os.environ['QT_QPA_PLATFORM']='offscreen'
+import joblib
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -36,21 +38,26 @@ def perform_eda(df):
     output:
             None
     '''
+    print('Null values for each variable:')
     print(df.isnull().sum())
+    print('/n')
+    print('Basic statistics of numerical data')
     print(df.describe())
     
     for column in list(df.describe().columns):
         ax = df[column].hist()
         fig = ax.get_figure()
-        fig.savefig('images/eda/{}_hist.png'.format(column))
+        fig.savefig('images/eda/{}_hist.png'.format(column),bbox_inches='tight')
+        plt.clf()
     category_columns = set(df.columns) - set(list(df.describe().columns))
     for column in list(category_columns):
         ax = df[column].value_counts('normalize').plot(kind='bar') 
         fig = ax.get_figure()
-        fig.savefig('images/eda/{}_dist.png'.format(column))
-    
+        fig.savefig('images/eda/{}_dist.png'.format(column),bbox_inches='tight')
+        plt.clf()
     ax =sns.heatmap(df.corr(), annot=False, cmap='Dark2_r', linewidths = 2)
-    fig.savefig('images/eda/corr.png')
+    fig.savefig('images/eda/corr.png',bbox_inches='tight')
+    plt.clf()
     
 
 
@@ -131,22 +138,25 @@ def classification_report_image(y_train,
     output:
              None
     '''
-    ax=pd.DataFrame(classification_report(y_train, y_train_preds_rf,output_dict=True)).plot()
-    fig = ax.get_figure()
-    fig.savefig('images/eda/classification_report_{}.png'.format('rf_train'))
-    
-    ax=pd.DataFrame(classification_report(y_train, y_train_preds_lr,output_dict=True)).plot()
-    fig = ax.get_figure()
-    fig.savefig('images/eda/classification_report_{}.png'.format('lr_train'))
-    
-    ax=pd.DataFrame(classification_report(y_test, y_test_preds_lr,output_dict=True)).plot()
-    fig = ax.get_figure()
-    fig.savefig('images/eda/classification_report_{}.png'.format('lr_test'))
-    
-    ax=pd.DataFrame(classification_report(y_test, y_train_preds_rf,output_dict=True)).plot()
-    fig = ax.get_figure()
-    fig.savefig('images/eda/classification_report_{}.png'.format('rf_test'))
-    
+    fig=plt.figure()
+    plt.rc('figure', figsize=(6, 6))
+    #plt.text(0.01, 0.05, str(model.summary()), {'fontsize': 12}) old approach
+    plt.text(0.01, 1.25, str('Random Forest Train'), {'fontsize': 10}, fontproperties = 'monospace')
+    plt.text(0.01, 0.05, str(classification_report(y_train, y_train_preds_rf)), {'fontsize': 10}, fontproperties = 'monospace') # approach improved by OP -> monospace!
+    plt.text(0.01, 0.6, str('Random Forest Test'), {'fontsize': 10}, fontproperties = 'monospace')
+    plt.text(0.01, 0.7, str(classification_report(y_test, y_test_preds_rf)), {'fontsize': 10}, fontproperties = 'monospace') # approach improved by OP -> monospace!
+    plt.axis('off')
+    fig.savefig('images/results/classification_report_{}.png'.format('rf'),bbox_inches='tight')
+    plt.clf()
+    fig=plt.figure()
+    plt.rc('figure', figsize=(5, 5))
+    plt.text(0.01, 1.25, str('Logistic Regression Train'), {'fontsize': 10}, fontproperties = 'monospace')
+    plt.text(0.01, 0.05, str(classification_report(y_train, y_train_preds_lr)), {'fontsize': 10}, fontproperties = 'monospace') # approach improved by OP -> monospace!
+    plt.text(0.01, 0.6, str('Logistic Regression Test'), {'fontsize': 10}, fontproperties = 'monospace')
+    plt.text(0.01, 0.7, str(classification_report(y_test, y_test_preds_lr)), {'fontsize': 10}, fontproperties = 'monospace') # approach improved by OP -> monospace!
+    plt.axis('off')
+    fig.savefig('images/results/classification_report_{}.png'.format('lr'),bbox_inches='tight')
+    plt.clf()
     
     
 
@@ -162,26 +172,30 @@ def feature_importance_plot(model, X_data, output_pth):
     output:
              None
     '''
-    # Calculate feature importances
+    assert isinstance(model,RandomForestClassifier ) ==True
+    # Calculate feature importances for rf
     importances = model.feature_importances_
-    # Sort feature importances in descending order
     indices = np.argsort(importances)[::-1]
 
+    
     # Rearrange feature names so they match the sorted feature importances
-    names = [X.columns[i] for i in indices]
-
+    names = [X_data.columns[i] for i in indices]
+    
     # Create plot
     plt.figure(figsize=(20,5))
-
+    fig=plt.figure()
     # Create plot title
     plt.title("Feature Importance")
     plt.ylabel('Importance')
 
     # Add bars
-    plt.bar(range(X.shape[1]), importances[indices])
+    plt.bar(range(X_data.shape[1]), importances[indices])
 
     # Add feature names as x-axis labels
-    plt.xticks(range(X.shape[1]), names, rotation=90);
+    plt.xticks(range(X_data.shape[1]), names, rotation=90)
+    
+    fig.savefig(output_pth,bbox_inches='tight')
+    plt.clf()
 
 def train_models(X_train, X_test, y_train, y_test):
     '''
@@ -197,10 +211,10 @@ def train_models(X_train, X_test, y_train, y_test):
     rfc = RandomForestClassifier(random_state=42)
     lrc = LogisticRegression()
 
-    param_grid = { 'n_estimators': [200, 500],
-        'max_features': ['auto', 'sqrt'],
-        'max_depth' : [4,5,100],
-        'criterion' :['gini', 'entropy']
+    param_grid = { 'n_estimators': [200, 500]
+        #,'max_features': ['auto', 'sqrt']
+        #,'max_depth' : [4,5,100]
+        #,'criterion' :['gini', 'entropy']
     }
     cv_rfc = GridSearchCV(estimator=rfc, param_grid=param_grid, cv=5)
     print("STARTING: Train Random Forest Grid Search")
@@ -220,11 +234,23 @@ def train_models(X_train, X_test, y_train, y_test):
                                 y_train_preds_rf,
                                 y_test_preds_lr,
                                 y_test_preds_rf)
+    # save best model
+    joblib.dump(cv_rfc.best_estimator_, './models/rfc_model.pkl')
+    joblib.dump(lrc, './models/logistic_model.pkl')
     
 
 if __name__ == "__main__":
     
     df = import_data(r"./data/bank_data.csv")
+    perform_eda(df)
     X_train, X_test, y_train, y_test =perform_feature_engineering(df, "Churn")
     train_models(X_train, X_test, y_train, y_test)
+    print("SAVING Feature Importance Images")
+    rfc_model = joblib.load('./models/rfc_model.pkl')
+    lr_model = joblib.load('./models/logistic_model.pkl')
+    feature_importance_plot(rfc_model, pd.concat([X_train,X_test]), 'images/results/rf_feature_importance.png')
+
+    
+    
+    
     

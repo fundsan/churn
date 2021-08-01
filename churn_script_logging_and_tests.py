@@ -68,7 +68,7 @@ def test_encoder_helper():
     test encoder helper
     '''
     
-    test_df=pd.read_csv("./data/bank_data.csv")
+    test_df=pd.read_csv("./data/test_bank_data.csv")
     test_df=test_df[['Attrition_Flag','Customer_Age','Dependent_count','Gender','Marital_Status']]
     categorical_test = ['Gender','Marital_Status']
     try :
@@ -79,18 +79,49 @@ def test_encoder_helper():
         logging.error("Testing encoder_helper: expected "+str(['Attrition_Flag','Customer_Age','Dependent_count','Gender','Marital_Status','Gender_churn','Marital_Status_churn'])+ " for columns but got "+str(encoder_helper(test_df,categorical_test).columns))
         raise err
         
-"""
+
 def test_perform_feature_engineering(perform_feature_engineering):
     '''
     test perform_feature_engineering
     '''
-    pass
+    test_df=pd.read_csv("./data/test_bank_data.csv")
+   
+    perform_feature_engineering(test_df, response='Churn')
+    X_train, X_test, y_train, y_test =perform_feature_engineering(test_df, "Churn")
+    try:
+        assert set(X_train.columns) ==set(['Customer_Age', 'Dependent_count', 'Months_on_book',
+             'Total_Relationship_Count', 'Months_Inactive_12_mon',
+             'Contacts_Count_12_mon', 'Credit_Limit', 'Total_Revolving_Bal',
+             'Avg_Open_To_Buy', 'Total_Amt_Chng_Q4_Q1', 'Total_Trans_Amt',
+             'Total_Trans_Ct', 'Total_Ct_Chng_Q4_Q1', 'Avg_Utilization_Ratio',
+             'Gender_Churn', 'Education_Level_Churn', 'Marital_Status_Churn', 
+             'Income_Category_Churn', 'Card_Category_Churn'])
+        logging.info("Testing perform_feature_engineering: SUCCESSFULLY Created Training and Test set with correct columns")
+        except AssertionError:
+            logging.error("Testing perform_feature_engineering: expected "+str(['Customer_Age', 'Dependent_count', 'Months_on_book',
+             'Total_Relationship_Count', 'Months_Inactive_12_mon',
+             'Contacts_Count_12_mon', 'Credit_Limit', 'Total_Revolving_Bal',
+             'Avg_Open_To_Buy', 'Total_Amt_Chng_Q4_Q1', 'Total_Trans_Amt',
+             'Total_Trans_Ct', 'Total_Ct_Chng_Q4_Q1', 'Avg_Utilization_Ratio',
+             'Gender_Churn', 'Education_Level_Churn', 'Marital_Status_Churn', 
+             'Income_Category_Churn', 'Card_Category_Churn'])+ " for columns but got "+str(X_train.columns))
+        raise err
+        
+
+    
+    
 
 def test_train_models(train_models):
     '''
     test train_models
     '''
-    pass
+    test_df=pd.read_csv("./data/test_bank_data.csv")
+    X_train, X_test, y_train, y_test =perform_feature_engineering(test_df, response='Churn')
+    try:
+        train_models(X_train, X_test, y_train, y_test)
+        assert os.path.isfile('./models/rfc_model.pkl')==True
+        os.remove("./images/eda/corr.png") 
+        logging.info("Testing train_models: models SUCCESSFULLY saved")
 
 """
 if __name__ == "__main__":
