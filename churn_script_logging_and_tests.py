@@ -125,14 +125,7 @@ def test_train_models():
     except AssertionError as err:
         logging.error("Testing import_data: The file doesn't appear to have rows and columns")
         raise err
-    try:
-        train_models(x_train, x_test, y_train, y_test)
-        assert os.path.isfile('./models/rfc_model.pkl') is True
-        os.remove('./models/rfc_model.pkl') 
-        logging.info("Testing train_models: models SUCCESSFULLY saved")
-    except AssertionError as err:
-        logging.error("Testing import_data: The file doesn't appear to have rows and columns")
-        raise errgit 
+
 """
 if __name__ == "__main__":
     test_import()
