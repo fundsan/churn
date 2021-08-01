@@ -8,8 +8,8 @@ Description:
 
 Usage:
 
-     test()
-     
+     test()     
+
 Details:
 
      This part goes in the Details!
@@ -122,7 +122,7 @@ def perform_feature_engineering(df, response='Churn'):
 
 
     df = encoder_helper(df, cat_columns, response=response)
-
+    ohe= OneHotEncoder(handle_unknown='ignore')
     keep_cols = [
         'Customer_Age',
         'Dependent_count',
@@ -143,7 +143,7 @@ def perform_feature_engineering(df, response='Churn'):
         'Marital_Status_Churn',
         'Income_Category_Churn',
         'Card_Category_Churn']
-
+    
     x = df[keep_cols]
     y = df[response]
     # train test split
