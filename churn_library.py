@@ -22,7 +22,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 import joblib
-from sklearn.metrics import classification_report
+from sklearn.metrics import plot_roc_curve, classification_report
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split, GridSearchCV
@@ -37,8 +37,6 @@ def import_data(pth):
             df: pandas dataframe
     '''
     return pd.read_csv(pth)
-
-
 def perform_eda(df):
     '''
     perform eda on df and save figures to images folder
@@ -72,8 +70,6 @@ def perform_eda(df):
     ax = sns.heatmap(df.corr(), annot=False, cmap='Dark2_r', linewidths=2)
     fig.savefig('images/eda/corr.png', bbox_inches='tight')
     plt.clf()
-
-
 def encoder_helper(df, category_lst, response='Churn'):
     '''
     helper function to turn each categorical column into a new column with
@@ -97,8 +93,6 @@ def encoder_helper(df, category_lst, response='Churn'):
         df[category + '_' +
             response] = df[category].apply(lambda x: groups.loc[x])
     return df
-
-
 def perform_feature_engineering(df, response='Churn'):
     '''
     input:
@@ -122,7 +116,6 @@ def perform_feature_engineering(df, response='Churn'):
 
 
     df = encoder_helper(df, cat_columns, response=response)
-    ohe= OneHotEncoder(handle_unknown='ignore')
     keep_cols = [
         'Customer_Age',
         'Dependent_count',
@@ -148,9 +141,8 @@ def perform_feature_engineering(df, response='Churn'):
     y = df[response]
     # train test split
     return train_test_split(x, y, test_size=0.3, random_state=42)
-
-
-def classification_report_image(y_train,
+def classification_report_image(x_test,
+                                y_train,
                                 y_test,
                                 y_train_preds_lr,
                                 y_train_preds_rf,
@@ -160,6 +152,7 @@ def classification_report_image(y_train,
     produces classification report for training and testing results and stores report as image
     in images folder
     input:
+            x_test: X testing data
             y_train: training response values
             y_test:  test response values
             y_train_preds_lr: training predictions from logistic regression
@@ -201,8 +194,16 @@ def classification_report_image(y_train,
         'images/results/classification_report_{}.png'.format('lr'),
         bbox_inches='tight')
     plt.clf()
-
-
+    rfc_model = joblib.load('./models/rfc_model.pkl')
+    lr_model = joblib.load('./models/logistic_model.pkl')
+    # Auc plots
+    lrc_plot = plot_roc_curve(lr_model, x_test, y_test)
+    plt.figure(figsize=(15, 8))
+    ax = plt.gca()
+    
+    rfc_disp = plot_roc_curve(rfc_model, x_test, y_test, ax=ax, alpha=0.8)
+    lrc_plot.plot(ax=ax, alpha=0.8)
+    ax.get_figure().savefig('images/results/auc.png',bbox_inches='tight')
 def feature_importance_plot(model, x_data, output_pth):
     '''
     creates and stores the feature importances in pth
@@ -269,16 +270,18 @@ def train_models(x_train, x_test, y_train, y_test):
 
     y_train_preds_lr = lrc.predict(x_train)
     y_test_preds_lr = lrc.predict(x_test)
+    # save best model
+    joblib.dump(cv_rfc.best_estimator_, './models/rfc_model.pkl')
+    joblib.dump(lrc, './models/logistic_model.pkl')
     print("STARTING: Make Classification Images")
-    classification_report_image(y_train,
+    classification_report_image(x_test,
+                                y_train,
                                 y_test,
                                 y_train_preds_lr,
                                 y_train_preds_rf,
                                 y_test_preds_lr,
                                 y_test_preds_rf)
-    # save best model
-    joblib.dump(cv_rfc.best_estimator_, './models/rfc_model.pkl')
-    joblib.dump(lrc, './models/logistic_model.pkl')
+
 
 
 if __name__ == "__main__":
