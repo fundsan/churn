@@ -1,15 +1,16 @@
 # import libraries
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import plot_roc_curve, classification_report
+import joblib
+import seaborn as sns
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
 import os
 os.environ['QT_QPA_PLATFORM'] = 'offscreen'
-import numpy as np
-import matplotlib.pyplot as plt
-import pandas as pd
-import seaborn as sns
-import joblib
-from sklearn.metrics import plot_roc_curve, classification_report
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split, GridSearchCV
+
 
 def import_data(pth):
     '''
@@ -21,6 +22,8 @@ def import_data(pth):
             df: pandas dataframe
     '''
     return pd.read_csv(pth)
+
+
 def perform_eda(df):
     '''
     perform eda on df and save figures to images folder
@@ -54,6 +57,8 @@ def perform_eda(df):
     ax = sns.heatmap(df.corr(), annot=False, cmap='Dark2_r', linewidths=2)
     fig.savefig('images/eda/corr.png', bbox_inches='tight')
     plt.clf()
+
+
 def encoder_helper(df, category_lst, response='Churn'):
     '''
     helper function to turn each categorical column into a new column with
@@ -62,7 +67,7 @@ def encoder_helper(df, category_lst, response='Churn'):
     input:
             df: pandas dataframe
             category_lst: list of columns that contain categorical features
-            response: string of response name 
+            response: string of response name
             [optional argument that could be used for naming variables or index y column]
 
     output:
@@ -77,11 +82,13 @@ def encoder_helper(df, category_lst, response='Churn'):
         df[category + '_' +
             response] = df[category].apply(lambda x: groups.loc[x])
     return df
+
+
 def perform_feature_engineering(df, response='Churn'):
     '''
     input:
               df: pandas dataframe
-              response: string of response name 
+              response: string of response name
               [optional argument that could be used for naming variables or index y column]
 
     output:
@@ -96,8 +103,6 @@ def perform_feature_engineering(df, response='Churn'):
         'Marital_Status',
         'Income_Category',
         'Card_Category']
-
-
 
     df = encoder_helper(df, cat_columns, response=response)
     keep_cols = [
@@ -120,11 +125,13 @@ def perform_feature_engineering(df, response='Churn'):
         'Marital_Status_Churn',
         'Income_Category_Churn',
         'Card_Category_Churn']
-    
+
     x = df[keep_cols]
     y = df[response]
     # train test split
     return train_test_split(x, y, test_size=0.3, random_state=42)
+
+
 def classification_report_image(x_test,
                                 y_train,
                                 y_test,
@@ -184,11 +191,13 @@ def classification_report_image(x_test,
     lrc_disp = plot_roc_curve(lr_model, x_test, y_test)
     plt.figure(figsize=(15, 8))
     ax = plt.gca()
-    
+
     rfc_disp = plot_roc_curve(rfc_model, x_test, y_test, ax=ax, alpha=0.8)
     lrc_disp.plot(ax=ax, alpha=0.8)
-    fig=ax.get_figure()
+    fig = ax.get_figure()
     fig.savefig('images/results/auc.png')
+
+
 def feature_importance_plot(model, x_data, output_pth):
     '''
     creates and stores the feature importances in pth
@@ -268,12 +277,12 @@ def train_models(x_train, x_test, y_train, y_test):
                                 y_test_preds_rf)
 
 
-
 if __name__ == "__main__":
 
     bank_df = import_data(r"./data/bank_data.csv")
     perform_eda(bank_df)
-    x_bank_train, x_bank_test, y_bank_train, y_bank_test = perform_feature_engineering(bank_df, "Churn")
+    x_bank_train, x_bank_test, y_bank_train, y_bank_test = perform_feature_engineering(
+        bank_df, "Churn")
     train_models(x_bank_train, x_bank_test, y_bank_train, y_bank_test)
     print("SAVING Feature Importance Images")
     rfc_model = joblib.load('./models/rfc_model.pkl')
