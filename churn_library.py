@@ -1,19 +1,3 @@
-# library doc string
-"""
-This is my title line
-
-Description:
-
-     All of this text goes in the Description section
-
-Usage:
-
-     test()     
-
-Details:
-
-     This part goes in the Details!
-"""
 # import libraries
 import os
 os.environ['QT_QPA_PLATFORM'] = 'offscreen'
@@ -197,13 +181,14 @@ def classification_report_image(x_test,
     rfc_model = joblib.load('./models/rfc_model.pkl')
     lr_model = joblib.load('./models/logistic_model.pkl')
     # Auc plots
-    lrc_plot = plot_roc_curve(lr_model, x_test, y_test)
+    lrc_disp = plot_roc_curve(lr_model, x_test, y_test)
     plt.figure(figsize=(15, 8))
     ax = plt.gca()
     
     rfc_disp = plot_roc_curve(rfc_model, x_test, y_test, ax=ax, alpha=0.8)
-    lrc_plot.plot(ax=ax, alpha=0.8)
-    ax.get_figure().savefig('images/results/auc.png',bbox_inches='tight')
+    lrc_disp.plot(ax=ax, alpha=0.8)
+    fig=ax.get_figure()
+    fig.savefig('images/results/auc.png')
 def feature_importance_plot(model, x_data, output_pth):
     '''
     creates and stores the feature importances in pth
