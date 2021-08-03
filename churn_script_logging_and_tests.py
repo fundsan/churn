@@ -1,19 +1,3 @@
-# library doc string
-"""
-This is my title line
-
-Description:
-
-     All of this text goes in the Description section
-
-Usage:
-
-     test()
-
-Details:
-
-     This part goes in the Details!
-"""
 import os
 import logging
 import pandas as pd
