@@ -1,3 +1,17 @@
+#Doc File
+'''
+File: churn_library.py
+
+This library has all the functions needed to create a machine learning model
+for predicting churn for credit card users.
+
+run in command prompt: python churn_library.py to perform all ML steps.
+
+Author: Jake Fund
+
+Date Created: 8/2/2021
+'''
+
 # import libraries
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.linear_model import LogisticRegression
@@ -249,9 +263,9 @@ def train_models(x_train, x_test, y_train, y_test):
     lrc = LogisticRegression()
 
     param_grid = {'n_estimators': [200, 500]
-                  # ,'max_features': ['auto', 'sqrt']
-                  # ,'max_depth' : [4,5,100]
-                  # ,'criterion' :['gini', 'entropy']
+                   ,'max_features': ['auto', 'sqrt']
+                   ,'max_depth' : [4,5,100]
+                   ,'criterion' :['gini', 'entropy']
                   }
     cv_rfc = GridSearchCV(estimator=rfc, param_grid=param_grid, cv=5)
     print("STARTING: Train Random Forest Grid Search")

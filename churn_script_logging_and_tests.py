@@ -1,3 +1,16 @@
+#Doc File
+'''
+File: churn_script_and_logging.py.py
+
+This library has all the functions needed to create a machine learning model
+for predicting churn for credit card users.
+
+run in command prompt: pytest churn_script_logging_and_testing.py to perform all ML steps.
+
+Author: Jake Fund
+
+Date Created: 8/2/2021
+'''
 import os
 import logging
 import pandas as pd
@@ -14,7 +27,7 @@ logging.basicConfig(
 
 def test_import():
     '''
-    test data import - this example is completed for you to assist with the other test functions
+    test data import
     '''
     try:
         df = import_data("./data/bank_data.csv")
